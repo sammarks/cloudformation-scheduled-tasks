@@ -1,0 +1,35 @@
+{
+  "name": "cloudformation-scheduled-tasks",
+  "version": "0.0.1",
+  "description": "An AWS CloudFormation template for running scheduled tasks.",
+  "main": "index.js",
+  "repository": "https://github.com/sammarks/cloudformation-scheduled-tasks",
+  "author": "Sam Marks <sam@sammarks.me>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "lint": "eslint src/*.js test/*.js",
+    "test": "jest --coverage",
+    "report-coverage": "cat ./coverage/lcov.info | coveralls",
+    "release": "standard-version",
+    "deploy": "./deploy-to-s3.sh"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.504.0",
+    "aws-sdk-mock": "^4.5.0",
+    "coveralls": "^3.0.5",
+    "eslint": "^6.1.0",
+    "eslint-config-standard": "^13.0.1",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jest": "^22.14.1",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "jest": "^24.8.0",
+    "jest-junit": "^7.0.0",
+    "lolex": "^4.2.0",
+    "serverless": "^1.49.0",
+    "serverless-sam": "^0.2.0",
+    "standard-version": "^7.0.0"
+  }
+}

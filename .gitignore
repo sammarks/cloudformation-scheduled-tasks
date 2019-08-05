@@ -1,0 +1,13 @@
+# generated items
+packaged-template.yaml
+sam-template.yaml
+coverage
+
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+.idea
