@@ -30,6 +30,9 @@ jobs:
             JEST_JUNIT_OUTPUT: "reports/junit/js-test-results.xml"
       - store_test_results:
           path: reports
+      - run:
+          name: Report Coverage
+          command: yarn report-coverage
       - persist_to_workspace:
           root: ~/repo
           paths: .
@@ -46,9 +49,6 @@ jobs:
             echo 'export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"' >> $BASH_ENV
             echo 'export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"' >> $BASH_ENV
             echo 'export COVERALLS_REPO_TOKEN="$COVERALLS_REPO_TOKEN"' >> $BASH_ENV
-      - run:
-          name: Report Coverage
-          command: yarn report-coverage
       - run:
           name: Install AWS CLI
           command: |
