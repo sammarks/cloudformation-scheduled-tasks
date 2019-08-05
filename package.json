@@ -31,5 +31,8 @@
     "serverless": "^1.49.0",
     "serverless-sam": "^0.2.0",
     "standard-version": "^7.0.0"
+  },
+  "resolutions": {
+    "lodash": "4.17.15"
   }
 }
