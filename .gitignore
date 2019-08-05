@@ -2,6 +2,7 @@
 packaged-template.yaml
 sam-template.yaml
 coverage
+yarn-error.log
 
 # package directories
 node_modules
