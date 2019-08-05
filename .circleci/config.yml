@@ -68,6 +68,8 @@ workflows:
               only: /.*/
       - deploy:
           context: personal-aws
+          requires:
+            - build
           filters:
             branches:
               ignore: /.*/
