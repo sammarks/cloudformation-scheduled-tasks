@@ -12,7 +12,7 @@ afterEach(() => {
 })
 
 describe('schedule handler', () => {
-  let publishStub, queryStub, deleteStub
+  let publishStub, scanStub, deleteStub
   beforeEach(() => {
     process.env.TASKS_TABLE = 'tasks-table'
     publishStub = jest.fn((params, callback) => callback(null, 'Success'))
@@ -22,7 +22,7 @@ describe('schedule handler', () => {
   })
   describe('when there are tasks in the past that need to be executed', () => {
     beforeEach(() => {
-      queryStub = jest.fn((params, callback) => callback(null, {
+      scanStub = jest.fn((params, callback) => callback(null, {
         Items: [
           {
             taskId: 'test-task-one',
@@ -36,20 +36,18 @@ describe('schedule handler', () => {
           }
         ]
       }))
-      AWS.mock('DynamoDB.DocumentClient', 'query', queryStub)
+      AWS.mock('DynamoDB.DocumentClient', 'scan', scanStub)
       return handler()
     })
-    it('queries for the items properly', () => {
-      expect(queryStub.mock.calls.length).toEqual(1)
-      expect(queryStub.mock.calls[0][0]).toEqual({
+    it('scans for the items properly', () => {
+      expect(scanStub.mock.calls.length).toEqual(1)
+      expect(scanStub.mock.calls[0][0]).toEqual({
         TableName: 'tasks-table',
-        KeyConditionExpression: '#taskId != :taskId AND #executeTime <= :executeTime',
+        FilterExpression: '#executeTime <= :executeTime',
         ExpressionAttributeNames: {
-          '#taskId': 'taskId',
           '#executeTime': 'executeTime'
         },
         ExpressionAttributeValues: {
-          ':taskId': '',
           ':executeTime': 20
         }
       })
@@ -79,10 +77,10 @@ describe('schedule handler', () => {
   })
   describe('when there are no tasks in the past that need to be executed', () => {
     beforeEach(() => {
-      queryStub = jest.fn((params, callback) => callback(null, {
+      scanStub = jest.fn((params, callback) => callback(null, {
         Items: []
       }))
-      AWS.mock('DynamoDB.DocumentClient', 'query', queryStub)
+      AWS.mock('DynamoDB.DocumentClient', 'scan', scanStub)
       return handler()
     })
     it('does nothing', () => {

@@ -39,16 +39,14 @@ describe('ingest handler', () => {
     expect(updateStub.mock.calls[0][0]).toEqual({
       TableName: 'tasks-table',
       Key: { taskId: 'test-task-id' },
-      UpdateExpression: 'SET #executeTime = :executeTime, #taskId = :taskId, #topicArn = :topicArn, #payload = :payload',
+      UpdateExpression: 'SET #executeTime = :executeTime, #topicArn = :topicArn, #payload = :payload',
       ExpressionAttributeNames: {
         '#executeTime': 'executeTime',
-        '#taskId': 'taskId',
         '#topicArn': 'topicArn',
         '#payload': 'payload'
       },
       ExpressionAttributeValues: {
         ':executeTime': 20,
-        ':taskId': 'test-task-id',
         ':topicArn': 'arn:aws:sns:us-east-1:123456789:test-topic',
         ':payload': { foo: 'bar' }
       }

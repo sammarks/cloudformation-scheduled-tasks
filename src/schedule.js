@@ -3,15 +3,13 @@ const AWS = require('aws-sdk')
 module.exports.handler = async () => {
   const sns = new AWS.SNS()
   const documentClient = new AWS.DynamoDB.DocumentClient()
-  const { Items } = await documentClient.query({
+  const { Items } = await documentClient.scan({
     TableName: process.env.TASKS_TABLE,
-    KeyConditionExpression: '#taskId != :taskId AND #executeTime <= :executeTime',
+    FilterExpression: '#executeTime <= :executeTime',
     ExpressionAttributeNames: {
-      '#taskId': 'taskId',
       '#executeTime': 'executeTime'
     },
     ExpressionAttributeValues: {
-      ':taskId': '',
       ':executeTime': (new Date()).getTime() / 1000
     }
   }).promise()
