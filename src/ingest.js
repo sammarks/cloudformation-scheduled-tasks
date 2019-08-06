@@ -10,14 +10,16 @@ module.exports.handler = async (event) => {
       await documentClient.update({
         TableName: process.env.TASKS_TABLE,
         Key: { taskId },
-        UpdateExpression: 'SET #executeTime = :executeTime, #topicArn = :topicArn, #payload = :payload',
+        UpdateExpression: 'SET #executeTime = :executeTime, #executeHuman = :executeHuman, #topicArn = :topicArn, #payload = :payload',
         ExpressionAttributeNames: {
           '#executeTime': 'executeTime',
+          '#executeHuman': 'executeHuman',
           '#topicArn': 'topicArn',
           '#payload': 'payload'
         },
         ExpressionAttributeValues: {
           ':executeTime': executeTime,
+          ':executeHuman': (new Date(executeTime * 1000)).toString(),
           ':topicArn': topicArn,
           ':payload': payload
         }
