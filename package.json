@@ -1,6 +1,6 @@
 {
   "name": "cloudformation-scheduled-tasks",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "An AWS CloudFormation template for running scheduled tasks.",
   "main": "index.js",
   "repository": "https://github.com/sammarks/cloudformation-scheduled-tasks",
