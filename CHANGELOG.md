@@ -2,13 +2,6 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.0.6](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.5...v0.0.6) (2019-08-06)
-
-
-### Bug Fixes
-
-* sort key is required when updating or deleting records ([9e6ce0b](https://github.com/sammarks/cloudformation-scheduled-tasks/commit/9e6ce0b))
-
 ### [0.0.5](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.4...v0.0.5) (2019-08-06)
 
 
