@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.8...v0.0.9) (2019-08-06)
+
+
+### Bug Fixes
+
+* add logs to help with debugging ([6b8be04](https://github.com/sammarks/cloudformation-scheduled-tasks/commit/6b8be04))
+
+
+### Features
+
+* add executeHuman to the DynamoDB record for easier debugging ([c80f554](https://github.com/sammarks/cloudformation-scheduled-tasks/commit/c80f554))
+
 ### [0.0.8](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.7...v0.0.8) (2019-08-06)
 
 
