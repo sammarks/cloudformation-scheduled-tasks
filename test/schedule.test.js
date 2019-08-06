@@ -27,12 +27,14 @@ describe('schedule handler', () => {
           {
             taskId: 'test-task-one',
             payload: { foo: 'bar' },
-            topicArn: 'arn:aws:sns:us-east-1:123456789:test-topic'
+            topicArn: 'arn:aws:sns:us-east-1:123456789:test-topic',
+            executeTime: 5
           },
           {
             taskId: 'test-task-two',
             payload: { foo2: 'bar2' },
-            topicArn: 'arn:aws:sns:us-east-1:123456789:test-topic'
+            topicArn: 'arn:aws:sns:us-east-1:123456789:test-topic',
+            executeTime: 10
           }
         ]
       }))
@@ -69,11 +71,11 @@ describe('schedule handler', () => {
       expect(deleteStub.mock.calls.length).toEqual(2)
       expect(deleteStub.mock.calls[0][0]).toEqual({
         TableName: 'tasks-table',
-        Key: { taskId: 'test-task-one' }
+        Key: { taskId: 'test-task-one', executeTime: 5 }
       })
       expect(deleteStub.mock.calls[1][0]).toEqual({
         TableName: 'tasks-table',
-        Key: { taskId: 'test-task-two' }
+        Key: { taskId: 'test-task-two', executeTime: 10 }
       })
     })
   })

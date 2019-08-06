@@ -15,14 +15,14 @@ module.exports.handler = async () => {
       ':executeTime': (new Date()).getTime() / 1000
     }
   }).promise()
-  await Promise.all(Items.map(async ({ topicArn, payload, taskId }) => {
+  await Promise.all(Items.map(async ({ topicArn, payload, taskId, executeTime }) => {
     await sns.publish({
       TopicArn: topicArn,
       Message: JSON.stringify(payload)
     }).promise()
     await documentClient.delete({
       TableName: process.env.TASKS_TABLE,
-      Key: { taskId }
+      Key: { taskId, executeTime }
     }).promise()
   }))
 }

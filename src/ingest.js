@@ -7,7 +7,7 @@ module.exports.handler = async (event) => {
     if (executeTime) {
       await documentClient.update({
         TableName: process.env.TASKS_TABLE,
-        Key: { taskId },
+        Key: { taskId, executeTime },
         UpdateExpression: 'SET #executeTime = :executeTime, #taskId = :taskId, #topicArn = :topicArn, #payload = :payload',
         ExpressionAttributeNames: {
           '#executeTime': 'executeTime',
@@ -23,10 +23,22 @@ module.exports.handler = async (event) => {
         }
       }).promise()
     } else {
-      await documentClient.delete({
+      const { Items } = await documentClient.query({
         TableName: process.env.TASKS_TABLE,
-        Key: { taskId }
+        KeyConditionExpression: '#taskId = :taskId',
+        ExpressionAttributeNames: {
+          '#taskId': 'taskId'
+        },
+        ExpressionAttributeValues: {
+          ':taskId': taskId
+        }
       }).promise()
+      await Promise.all(Items.map((item) => {
+        return documentClient.delete({
+          TableName: process.env.TASKS_TABLE,
+          Key: { taskId: item.taskId, executeTime: item.executeTime }
+        }).promise()
+      }))
     }
   }))
 }
