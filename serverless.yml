@@ -19,7 +19,7 @@ provider:
         - dynamodb:Query
         - dynamodb:DeleteItem
       Resource:
-        Ref: tasksTable
+        Fn::GetAtt: ['tasksTable', 'Arn']
 functions:
   ingest:
     handler: src/ingest.handler
