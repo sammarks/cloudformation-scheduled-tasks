@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.7...v0.0.8) (2019-08-06)
+
+
+### Bug Fixes
+
+* use DynamoDB scans instead of query ([deec40b](https://github.com/sammarks/cloudformation-scheduled-tasks/commit/deec40b))
+
 ### [0.0.6](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.7...v0.0.6) (2019-08-06)
 
 
