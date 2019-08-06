@@ -32,69 +32,100 @@ describe('ingest handler', () => {
     AWS.mock('DynamoDB.DocumentClient', 'delete', deleteStub)
   })
 
-  it('creates or updates the task', async () => {
-    await handler(event)
-    expect(updateStub.mock.calls.length).toEqual(1)
-    expect(deleteStub.mock.calls.length).toEqual(0)
-    expect(updateStub.mock.calls[0][0]).toEqual({
-      TableName: 'tasks-table',
-      Key: { taskId: 'test-task-id', executeTime: 20 },
-      UpdateExpression: 'SET #executeTime = :executeTime, #taskId = :taskId, #topicArn = :topicArn, #payload = :payload',
-      ExpressionAttributeNames: {
-        '#executeTime': 'executeTime',
-        '#taskId': 'taskId',
-        '#topicArn': 'topicArn',
-        '#payload': 'payload'
-      },
-      ExpressionAttributeValues: {
-        ':executeTime': 20,
-        ':taskId': 'test-task-id',
-        ':topicArn': 'arn:aws:sns:us-east-1:123456789:test-topic',
-        ':payload': { foo: 'bar' }
-      }
+  describe('when a task with the same task ID already exists and executeTime is falsy', () => {
+    beforeEach(async () => {
+      queryStub = jest.fn((params, callback) => callback(null, {
+        Items: [
+          { taskId: 'test-task-id', executeTime: 10 },
+          { taskId: 'test-task-id', executeTime: 20 }
+        ]
+      }))
+      AWS.mock('DynamoDB.DocumentClient', 'query', queryStub)
+      event.Records[0].Sns.Message = JSON.stringify({
+        executeTime: null,
+        taskId: 'test-task-id',
+        topicArn: 'arn:aws:sns:us-east-1:123456789:test-topic'
+      })
+      await handler(event)
+    })
+    it('queries for the existing tasks properly', () => {
+      expect(queryStub.mock.calls.length).toEqual(1)
+      expect(queryStub.mock.calls[0][0]).toEqual({
+        TableName: 'tasks-table',
+        KeyConditionExpression: '#taskId = :taskId',
+        ExpressionAttributeNames: {
+          '#taskId': 'taskId'
+        },
+        ExpressionAttributeValues: {
+          ':taskId': 'test-task-id'
+        }
+      })
+    })
+    it('deletes the old tasks', () => {
+      expect(deleteStub.mock.calls.length).toEqual(2)
+      expect(deleteStub.mock.calls[0][0]).toEqual({
+        TableName: 'tasks-table',
+        Key: { taskId: 'test-task-id', executeTime: 10 }
+      })
+      expect(deleteStub.mock.calls[1][0]).toEqual({
+        TableName: 'tasks-table',
+        Key: { taskId: 'test-task-id', executeTime: 20 }
+      })
+    })
+    it('does not create the new task', () => {
+      expect(updateStub.mock.calls.length).toEqual(0)
     })
   })
 
-  it('defaults payload to an empty object', async () => {
-    event.Records[0].Sns.Message = JSON.stringify({
-      executeTime: 20,
-      taskId: 'test-task-id',
-      topicArn: 'arn:aws:sns:us-east-1:123456789:test-topic'
+  describe('when a task with the same task ID does not already exist', () => {
+    beforeEach(async () => {
+      queryStub = jest.fn((params, callback) => callback(null, { Items: [] }))
+      AWS.mock('DynamoDB.DocumentClient', 'query', queryStub)
+      await handler(event)
     })
-    await handler(event)
-    expect(updateStub.mock.calls[0][0].ExpressionAttributeValues[':payload']).toEqual({})
-    expect(deleteStub.mock.calls.length).toEqual(0)
+    it('does not delete the old tasks', () => {
+      expect(deleteStub.mock.calls.length).toEqual(0)
+    })
   })
 
-  it('deletes entries matching the task ID if executeTime is falsy', async () => {
-    queryStub = jest.fn((params, callback) => callback(null, {
-      Items: [
-        { taskId: 'test-task-id', executeTime: 123 }
-      ]
-    }))
-    AWS.mock('DynamoDB.DocumentClient', 'query', queryStub)
-    event.Records[0].Sns.Message = JSON.stringify({
-      executeTime: null,
-      taskId: 'test-task-id',
-      topicArn: 'arn:aws:sns:us-east-1:123456789:test-topic'
+  describe('when executeTime is not falsy', () => {
+    beforeEach(async () => {
+      queryStub = jest.fn((params, callback) => callback(null, { Items: [] }))
+      AWS.mock('DynamoDB.DocumentClient', 'query', queryStub)
+      await handler(event)
     })
-    await handler(event)
-    expect(updateStub.mock.calls.length).toEqual(0)
-    expect(deleteStub.mock.calls.length).toEqual(1)
-    expect(deleteStub.mock.calls[0][0]).toEqual({
-      TableName: 'tasks-table',
-      Key: { taskId: 'test-task-id', executeTime: 123 }
+    it('creates the new task', () => {
+      expect(updateStub.mock.calls.length).toEqual(1)
+      expect(updateStub.mock.calls[0][0]).toEqual({
+        TableName: 'tasks-table',
+        Key: { taskId: 'test-task-id', executeTime: 20 },
+        UpdateExpression: 'SET #topicArn = :topicArn, #payload = :payload',
+        ExpressionAttributeNames: {
+          '#topicArn': 'topicArn',
+          '#payload': 'payload'
+        },
+        ExpressionAttributeValues: {
+          ':topicArn': 'arn:aws:sns:us-east-1:123456789:test-topic',
+          ':payload': { foo: 'bar' }
+        }
+      })
     })
-    expect(queryStub.mock.calls.length).toEqual(1)
-    expect(queryStub.mock.calls[0][0]).toEqual({
-      TableName: 'tasks-table',
-      KeyConditionExpression: '#taskId = :taskId',
-      ExpressionAttributeNames: {
-        '#taskId': 'taskId'
-      },
-      ExpressionAttributeValues: {
-        ':taskId': 'test-task-id'
-      }
+  })
+
+  describe('when the payload is not provided', () => {
+    beforeEach(async () => {
+      queryStub = jest.fn((params, callback) => callback(null, { Items: [] }))
+      AWS.mock('DynamoDB.DocumentClient', 'query', queryStub)
+      event.Records[0].Sns.Message = JSON.stringify({
+        executeTime: 20,
+        taskId: 'test-task-id',
+        topicArn: 'arn:aws:sns:us-east-1:123456789:test-topic'
+      })
+      await handler(event)
+    })
+    it('defaults it to an empty object', () => {
+      expect(updateStub.mock.calls[0][0].ExpressionAttributeValues[':payload']).toEqual({})
+      expect(deleteStub.mock.calls.length).toEqual(0)
     })
   })
 })
