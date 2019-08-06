@@ -110,6 +110,17 @@ environment:
       - 'Outputs.IngestSNSTopicArn'
 ```
 
+**Note:** This stack will require the `CAPABILITY_AUTO_EXPAND` capability when deploying
+the parent stack with CloudFormation. If you are using the Serverless framework, you can
+"trick" it into adding the required capabilities by adding this to your `serverless.yaml`:
+
+```yaml
+resources:
+  Transform: 'AWS::Serverless-2016-10-31' # Trigger Serverless to add CAPABILITY_AUTO_EXPAND
+  Resources:
+    otherResource: # ... all of your original resources
+```
+
 ### What's deployed?
 
 - Two Lambda Functions (Schedule and Ingest)
