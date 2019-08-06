@@ -4,7 +4,9 @@ module.exports.handler = async (event) => {
   const documentClient = new AWS.DynamoDB.DocumentClient()
   return Promise.all(event.Records.map(async (record) => {
     const { executeTime, taskId, topicArn, payload = {} } = JSON.parse(record.Sns.Message)
+    console.info(`Processing incoming task request: ${taskId}...`)
     if (executeTime) {
+      console.info(`Creating task '${taskId}' to execute at '${executeTime}'...`)
       await documentClient.update({
         TableName: process.env.TASKS_TABLE,
         Key: { taskId },
@@ -21,6 +23,7 @@ module.exports.handler = async (event) => {
         }
       }).promise()
     } else {
+      console.info(`Deleting task '${taskId}'...`)
       await documentClient.delete({
         TableName: process.env.TASKS_TABLE,
         Key: { taskId }
