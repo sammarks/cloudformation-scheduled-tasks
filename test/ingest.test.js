@@ -6,7 +6,7 @@ afterEach(() => {
 })
 
 describe('ingest handler', () => {
-  let event, updateStub, deleteStub, queryStub
+  let event, updateStub, deleteStub
 
   beforeEach(() => {
     process.env.TASKS_TABLE = 'tasks-table'
@@ -38,7 +38,7 @@ describe('ingest handler', () => {
     expect(deleteStub.mock.calls.length).toEqual(0)
     expect(updateStub.mock.calls[0][0]).toEqual({
       TableName: 'tasks-table',
-      Key: { taskId: 'test-task-id', executeTime: 20 },
+      Key: { taskId: 'test-task-id' },
       UpdateExpression: 'SET #executeTime = :executeTime, #taskId = :taskId, #topicArn = :topicArn, #payload = :payload',
       ExpressionAttributeNames: {
         '#executeTime': 'executeTime',
@@ -66,13 +66,7 @@ describe('ingest handler', () => {
     expect(deleteStub.mock.calls.length).toEqual(0)
   })
 
-  it('deletes entries matching the task ID if executeTime is falsy', async () => {
-    queryStub = jest.fn((params, callback) => callback(null, {
-      Items: [
-        { taskId: 'test-task-id', executeTime: 123 }
-      ]
-    }))
-    AWS.mock('DynamoDB.DocumentClient', 'query', queryStub)
+  it('deletes the entry if executeTime is falsy', async () => {
     event.Records[0].Sns.Message = JSON.stringify({
       executeTime: null,
       taskId: 'test-task-id',
@@ -83,18 +77,7 @@ describe('ingest handler', () => {
     expect(deleteStub.mock.calls.length).toEqual(1)
     expect(deleteStub.mock.calls[0][0]).toEqual({
       TableName: 'tasks-table',
-      Key: { taskId: 'test-task-id', executeTime: 123 }
-    })
-    expect(queryStub.mock.calls.length).toEqual(1)
-    expect(queryStub.mock.calls[0][0]).toEqual({
-      TableName: 'tasks-table',
-      KeyConditionExpression: '#taskId = :taskId',
-      ExpressionAttributeNames: {
-        '#taskId': 'taskId'
-      },
-      ExpressionAttributeValues: {
-        ':taskId': 'test-task-id'
-      }
+      Key: { taskId: 'test-task-id' }
     })
   })
 })
