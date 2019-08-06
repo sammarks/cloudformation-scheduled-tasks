@@ -13,6 +13,13 @@ provider:
         - sns:Publish
       Resource:
         Ref: DestinationArns
+    - Effect: Allow
+      Action:
+        - dynamodb:UpdateItem
+        - dynamodb:Query
+        - dynamodb:DeleteItem
+      Resource:
+        Ref: tasksTable
 functions:
   ingest:
     handler: src/ingest.handler
