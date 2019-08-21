@@ -5,6 +5,7 @@ module.exports.handler = async () => {
   const documentClient = new AWS.DynamoDB.DocumentClient()
   const { Items } = await documentClient.scan({
     TableName: process.env.TASKS_TABLE,
+    Limit: 25,
     FilterExpression: '#executeTime <= :executeTime',
     ExpressionAttributeNames: {
       '#executeTime': 'executeTime'

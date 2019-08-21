@@ -43,6 +43,7 @@ describe('schedule handler', () => {
       expect(scanStub.mock.calls.length).toEqual(1)
       expect(scanStub.mock.calls[0][0]).toEqual({
         TableName: 'tasks-table',
+        Limit: 25,
         FilterExpression: '#executeTime <= :executeTime',
         ExpressionAttributeNames: {
           '#executeTime': 'executeTime'

@@ -29,6 +29,7 @@ functions:
             Ref: ingestTopic
   schedule:
     handler: src/schedule.handler
+    timeout: 60
     events:
       - schedule:
           rate:
