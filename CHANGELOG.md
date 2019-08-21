@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.10](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.9...v0.0.10) (2019-08-21)
+
+
+### Bug Fixes
+
+* limit scan to 25 items at a time, and increase timeout on schedule lambda function ([fa76432](https://github.com/sammarks/cloudformation-scheduled-tasks/commit/fa76432))
+
 ### [0.0.9](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.8...v0.0.9) (2019-08-06)
 
 
