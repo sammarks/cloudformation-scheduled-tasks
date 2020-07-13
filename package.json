@@ -30,7 +30,7 @@
     "lolex": "^4.2.0",
     "serverless": "^1.49.0",
     "serverless-sam": "^0.2.0",
-    "standard-version": "^7.0.0"
+    "standard-version": "^8.0.1"
   },
   "resolutions": {
     "lodash": "4.17.15"
