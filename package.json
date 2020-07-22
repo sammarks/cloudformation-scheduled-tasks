@@ -28,8 +28,6 @@
     "jest": "^26.1.0",
     "jest-junit": "^11.0.1",
     "lolex": "^6.0.0",
-    "serverless": "^1.75.1",
-    "serverless-sam": "^0.2.0",
     "standard-version": "^8.0.2"
   },
   "resolutions": {

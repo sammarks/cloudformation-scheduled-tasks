@@ -1,6 +1,10 @@
-rm -f ./packaged-template.yaml ./sam-template.yaml
+rm -f ./packaged-template.yaml
 
-sls sam export --output ./sam-template.yaml
+cp package.json src/package.json
+cp yarn.lock src/yarn.lock
+cd src
+yarn install --production --frozen-lockfile
+cd ..
 
 PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
 
@@ -20,4 +24,4 @@ aws cloudformation package \
 aws s3 cp ./packaged-template.yaml "s3://sammarks-cf-templates-us-east-2/scheduled-tasks/$PACKAGE_VERSION/template.yaml"
 aws s3 cp ./packaged-template.yaml "s3://sammarks-cf-templates-us-east-2/scheduled-tasks/template.yaml"
 
-rm -rf ./packaged-template.yaml ./sam-template.yaml
+rm -rf ./src/node_modules ./src/package.json ./src/yarn.lock ./packaged-template.yaml
