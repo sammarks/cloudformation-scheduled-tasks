@@ -13,7 +13,7 @@ event (Lambda function, Email, Text Message, etc) at a specific time.
 
 It's simple! Click this fancy button:
 
-[![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=scheduled-tasks&templateURL=https://cloudformation-scheduled-tasks.s3.amazonaws.com/template.yaml)
+[![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=scheduled-tasks&templateURL=https://sammarks-cf-templates.s3.amazonaws.com/scheduled-tasks/template.yaml)
 
 Then give the stack a name, and configure it:
 
@@ -88,7 +88,7 @@ otherTopic:
 scheduledTasksStack:
   Type: AWS::CloudFormation::Stack
   Properties:
-    TemplateURL: https://cloudformation-scheduled-tasks.s3.amazonaws.com/VERSION/template.yaml
+    TemplateURL: https://sammarks-cf-templates.s3.amazonaws.com/scheduled-tasks/VERSION/template.yaml
     Parameters:
       PollingSchedule: 'rate(5 minutes)'
       ReadCapacityUnits: 1
@@ -119,6 +119,20 @@ resources:
   Transform: 'AWS::Serverless-2016-10-31' # Trigger Serverless to add CAPABILITY_AUTO_EXPAND
   Resources:
     otherResource: # ... all of your original resources
+```
+
+**A quick note on regions:** If you are deploying this stack in a region other than `us-east-1`,
+you need to reference the proper region S3 bucket as we're deploying Lambda functions. Just
+add the region suffix to the template URL, so this:
+
+```
+https://sammarks-cf-templates.s3.amazonaws.com/scheduled-tasks/VERSION/template.yaml
+```
+
+becomes this:
+
+```
+https://sammarks-cf-templates-us-east-2.s3.amazonaws.com/scheduled-tasks/VERSION/template.yaml
 ```
 
 ### What's deployed?

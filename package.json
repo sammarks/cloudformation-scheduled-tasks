@@ -15,24 +15,24 @@
     "deploy": "./deploy-to-s3.sh"
   },
   "devDependencies": {
-    "aws-sdk": "^2.504.0",
-    "aws-sdk-mock": "^4.5.0",
-    "coveralls": "^3.0.5",
-    "eslint": "^6.1.0",
-    "eslint-config-standard": "^13.0.1",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jest": "^22.14.1",
-    "eslint-plugin-node": "^9.1.0",
+    "aws-sdk": "^2.717.0",
+    "aws-sdk-mock": "^5.1.0",
+    "coveralls": "^3.1.0",
+    "eslint": "^7.5.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jest": "^23.18.0",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.0",
-    "jest": "^24.8.0",
-    "jest-junit": "^7.0.0",
-    "lolex": "^4.2.0",
-    "serverless": "^1.49.0",
+    "eslint-plugin-standard": "^4.0.1",
+    "jest": "^26.1.0",
+    "jest-junit": "^11.0.1",
+    "lolex": "^6.0.0",
+    "serverless": "^1.75.1",
     "serverless-sam": "^0.2.0",
-    "standard-version": "^7.0.0"
+    "standard-version": "^8.0.2"
   },
   "resolutions": {
-    "lodash": "4.17.15"
+    "lodash": "4.17.19"
   }
 }
