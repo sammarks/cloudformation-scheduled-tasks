@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.13](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.12...v0.0.13) (2020-07-22)
+
+
+### Features
+
+* switch from serverless -> SAM ([257eec9](https://github.com/sammarks/cloudformation-scheduled-tasks/commit/257eec901478c1175da64dafeb894a70302a56cd))
+
 ### [0.0.12](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.11...v0.0.12) (2020-07-22)
 
 
