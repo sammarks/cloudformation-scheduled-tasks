@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.12](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.11...v0.0.12) (2020-07-22)
+
+
+### Features
+
+* support other AWS regions and move location ([4cd4185](https://github.com/sammarks/cloudformation-scheduled-tasks/commit/4cd4185738d85e386b8619008a3394741a4277c5))
+
 ### [0.0.11](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.10...v0.0.11) (2019-08-21)
 
 
