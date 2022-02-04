@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.14](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.13...v0.0.14) (2022-02-04)
+
+
+### Bug Fixes
+
+* upgrade nodejs to 14 ([c94d20c](https://github.com/sammarks/cloudformation-scheduled-tasks/commit/c94d20c1fc768441fc6e06559cace7c92256f81b))
+
 ### [0.0.13](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.12...v0.0.13) (2020-07-22)
 
 
