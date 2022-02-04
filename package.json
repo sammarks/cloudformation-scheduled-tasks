@@ -15,7 +15,7 @@
     "deploy": "./deploy-to-s3.sh"
   },
   "devDependencies": {
-    "aws-sdk": "^2.717.0",
+    "aws-sdk": "^2.814.0",
     "aws-sdk-mock": "^5.1.0",
     "coveralls": "^3.1.0",
     "eslint": "^7.5.0",
