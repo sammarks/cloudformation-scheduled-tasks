@@ -23,7 +23,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: src/ingest.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs20.x
       CodeUri: src
       MemorySize: 128
       Timeout: 3
@@ -58,7 +58,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: src/schedule.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs20.x
       CodeUri: src
       MemorySize: 128
       Timeout: 60

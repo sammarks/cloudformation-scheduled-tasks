@@ -15,8 +15,6 @@
     "deploy": "./deploy-to-s3.sh"
   },
   "devDependencies": {
-    "aws-sdk": "^2.717.0",
-    "aws-sdk-mock": "^5.1.0",
     "coveralls": "^3.1.0",
     "eslint": "^7.5.0",
     "eslint-config-standard": "^14.1.1",
@@ -32,5 +30,10 @@
   },
   "resolutions": {
     "lodash": "4.17.19"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.478.0",
+    "@aws-sdk/client-sns": "^3.481.0",
+    "@aws-sdk/lib-dynamodb": "^3.478.0"
   }
 }

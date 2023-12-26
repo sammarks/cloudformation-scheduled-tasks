@@ -1,30 +1,57 @@
-const { handler } = require('../src/schedule')
 const lolex = require('lolex')
-const AWS = require('aws-sdk-mock')
 
-let clock
+jest.mock('@aws-sdk/lib-dynamodb', () => {
+  const originalModule = jest.requireActual('@aws-sdk/lib-dynamodb')
+  const sendMock = jest.fn()
+  return {
+    ...originalModule,
+    DynamoDBDocumentClient: {
+      from: () => ({
+        send: sendMock
+      })
+    }
+  }
+})
+jest.mock('@aws-sdk/client-sns', () => {
+  const originalModule = jest.requireActual('@aws-sdk/client-sns')
+  const sendMock = jest.fn()
+  return {
+    ...originalModule,
+    SNSClient: jest.fn(() => ({
+      send: sendMock
+    }))
+  }
+})
+
+const {
+  DynamoDBDocumentClient,
+  ScanCommand,
+  DeleteCommand
+} = require('@aws-sdk/lib-dynamodb')
+const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns')
+const { handler } = require('../src/schedule')
+
+let clock, dynamoSendMock, snsSendMock
 beforeEach(() => {
   clock = lolex.install({ now: 20000 }) // unix seconds: 20
+  dynamoSendMock = DynamoDBDocumentClient.from().send.mockImplementation(
+    async (command) => Promise.resolve('success')
+  )
+  snsSendMock = new SNSClient().send.mockImplementation(() => Promise.resolve())
 })
 afterEach(() => {
   clock.uninstall()
-  AWS.restore()
+  jest.clearAllMocks()
 })
 
 describe('schedule handler', () => {
-  let publishStub, scanStub, deleteStub
   beforeEach(() => {
     process.env.TASKS_TABLE = 'tasks-table'
-    publishStub = jest.fn((params, callback) => callback(null, 'Success'))
-    deleteStub = jest.fn((params, callback) => callback(null, 'Success'))
-    AWS.mock('DynamoDB.DocumentClient', 'delete', deleteStub)
-    AWS.mock('SNS', 'publish', publishStub)
   })
   describe('when there are tasks in the past that need to be executed', () => {
     beforeEach(() => {
-      scanStub = jest
-        .fn()
-        .mockImplementationOnce((params, callback) => callback(null, {
+      dynamoSendMock
+        .mockImplementationOnce(async () => ({
           LastEvaluatedKey: 'last-evaluated-key',
           Items: [
             {
@@ -34,7 +61,7 @@ describe('schedule handler', () => {
             }
           ]
         }))
-        .mockImplementationOnce((params, callback) => callback(null, {
+        .mockImplementationOnce(async () => ({
           LastEvaluatedKey: null,
           Items: [
             {
@@ -44,12 +71,13 @@ describe('schedule handler', () => {
             }
           ]
         }))
-      AWS.mock('DynamoDB.DocumentClient', 'scan', scanStub)
       return handler()
     })
     it('scans for the items properly', () => {
-      expect(scanStub.mock.calls.length).toEqual(2)
-      expect(scanStub.mock.calls[0][0]).toEqual({
+      expect(dynamoSendMock).toHaveBeenCalledTimes(4)
+      expect(dynamoSendMock.mock.calls[0][0]).toEqual(expect.any(ScanCommand))
+      expect(dynamoSendMock.mock.calls[1][0]).toEqual(expect.any(ScanCommand))
+      expect(dynamoSendMock.mock.calls[0][0].clientCommand.input).toEqual({
         TableName: 'tasks-table',
         FilterExpression: '#executeTime <= :executeTime',
         ExpressionAttributeNames: {
@@ -59,26 +87,29 @@ describe('schedule handler', () => {
           ':executeTime': 20
         }
       })
-      expect(scanStub.mock.calls[1][0].ExclusiveStartKey).toEqual('last-evaluated-key')
+      expect(dynamoSendMock.mock.calls[1][0].clientCommand.input.ExclusiveStartKey).toEqual('last-evaluated-key')
     })
     it('posts a message to the SNS topic with the payload', () => {
-      expect(publishStub.mock.calls.length).toEqual(2)
-      expect(publishStub.mock.calls[0][0]).toEqual({
+      expect(snsSendMock).toHaveBeenCalledTimes(2)
+      expect(snsSendMock.mock.calls[0][0]).toEqual(expect.any(PublishCommand))
+      expect(snsSendMock.mock.calls[1][0]).toEqual(expect.any(PublishCommand))
+      expect(snsSendMock.mock.calls[0][0].input).toEqual({
         Message: JSON.stringify({ foo: 'bar' }),
         TopicArn: 'arn:aws:sns:us-east-1:123456789:test-topic'
       })
-      expect(publishStub.mock.calls[1][0]).toEqual({
+      expect(snsSendMock.mock.calls[1][0].input).toEqual({
         Message: JSON.stringify({ foo2: 'bar2' }),
         TopicArn: 'arn:aws:sns:us-east-1:123456789:test-topic'
       })
     })
     it('deletes all executed messages', () => {
-      expect(deleteStub.mock.calls.length).toEqual(2)
-      expect(deleteStub.mock.calls[0][0]).toEqual({
+      expect(dynamoSendMock.mock.calls[2][0]).toEqual(expect.any(DeleteCommand))
+      expect(dynamoSendMock.mock.calls[3][0]).toEqual(expect.any(DeleteCommand))
+      expect(dynamoSendMock.mock.calls[2][0].clientCommand.input).toEqual({
         TableName: 'tasks-table',
         Key: { taskId: 'test-task-one' }
       })
-      expect(deleteStub.mock.calls[1][0]).toEqual({
+      expect(dynamoSendMock.mock.calls[3][0].clientCommand.input).toEqual({
         TableName: 'tasks-table',
         Key: { taskId: 'test-task-two' }
       })
@@ -86,15 +117,14 @@ describe('schedule handler', () => {
   })
   describe('when there are no tasks in the past that need to be executed', () => {
     beforeEach(() => {
-      scanStub = jest.fn((params, callback) => callback(null, {
+      dynamoSendMock.mockImplementationOnce(async () => ({
         Items: []
       }))
-      AWS.mock('DynamoDB.DocumentClient', 'scan', scanStub)
       return handler()
     })
     it('does nothing', () => {
-      expect(publishStub.mock.calls.length).toEqual(0)
-      expect(deleteStub.mock.calls.length).toEqual(0)
+      expect(snsSendMock).not.toHaveBeenCalled()
+      expect(dynamoSendMock).toHaveBeenCalledTimes(1) // The scan only.
     })
   })
   describe('when there are more than 25 items in the past that need to be executed', () => {
@@ -103,23 +133,20 @@ describe('schedule handler', () => {
         taskId: 'test-task-one',
         topicArn: 'arn:aws:sns:us-east-1:123456789:test-topic'
       }
-      scanStub = jest
-        .fn()
-        .mockImplementationOnce((params, callback) => callback(null, {
+      dynamoSendMock
+        .mockImplementationOnce(async () => ({
           LastEvaluatedKey: 'last-evaluated-key',
-          Items: (new Array(23)).fill(task)
+          Items: new Array(23).fill(task)
         }))
-        .mockImplementationOnce((params, callback) => callback(null, {
+        .mockImplementationOnce(async () => ({
           LastEvaluatedKey: 'another-evaluated-key',
-          Items: (new Array(20)).fill(task)
+          Items: new Array(20).fill(task)
         }))
-      AWS.mock('DynamoDB.DocumentClient', 'scan', scanStub)
       return handler()
     })
     it('only executes the first 25', () => {
-      expect(scanStub.mock.calls.length).toEqual(2)
-      expect(publishStub.mock.calls.length).toEqual(43)
-      expect(deleteStub.mock.calls.length).toEqual(43)
+      expect(dynamoSendMock).toHaveBeenCalledTimes(2 + 43) // 2 scans, 43 entries to delete.
+      expect(snsSendMock).toHaveBeenCalledTimes(43) // 43 entries to publish.
     })
   })
 })

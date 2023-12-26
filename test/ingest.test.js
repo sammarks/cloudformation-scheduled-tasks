@@ -1,12 +1,25 @@
-const { handler } = require('../src/ingest')
-const AWS = require('aws-sdk-mock')
+const { DynamoDBDocumentClient, UpdateCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb')
 
+jest.mock('@aws-sdk/lib-dynamodb', () => {
+  const originalModule = jest.requireActual('@aws-sdk/lib-dynamodb')
+  const sendMock = jest.fn()
+  return {
+    ...originalModule,
+    DynamoDBDocumentClient: {
+      from: () => ({
+        send: sendMock
+      })
+    }
+  }
+})
 afterEach(() => {
-  AWS.restore()
+  jest.clearAllMocks()
 })
 
+const { handler } = require('../src/ingest')
+
 describe('ingest handler', () => {
-  let event, updateStub, deleteStub
+  let event, sendMock
 
   beforeEach(() => {
     process.env.TASKS_TABLE = 'tasks-table'
@@ -26,33 +39,33 @@ describe('ingest handler', () => {
         }
       ]
     }
-    updateStub = jest.fn((params, callback) => callback(null, 'success'))
-    deleteStub = jest.fn((params, callback) => callback(null, 'success'))
-    AWS.mock('DynamoDB.DocumentClient', 'update', updateStub)
-    AWS.mock('DynamoDB.DocumentClient', 'delete', deleteStub)
+    sendMock = DynamoDBDocumentClient.from().send.mockImplementation(async command => Promise.resolve('success'))
   })
 
   it('creates or updates the task', async () => {
     await handler(event)
-    expect(updateStub.mock.calls.length).toEqual(1)
-    expect(deleteStub.mock.calls.length).toEqual(0)
-    expect(updateStub.mock.calls[0][0]).toEqual({
-      TableName: 'tasks-table',
-      Key: { taskId: 'test-task-id' },
-      UpdateExpression: 'SET #executeTime = :executeTime, #executeHuman = :executeHuman, #topicArn = :topicArn, #payload = :payload',
-      ExpressionAttributeNames: {
-        '#executeTime': 'executeTime',
-        '#executeHuman': 'executeHuman',
-        '#topicArn': 'topicArn',
-        '#payload': 'payload'
-      },
-      ExpressionAttributeValues: {
-        ':executeTime': 20,
-        ':executeHuman': (new Date(20000)).toString(),
-        ':topicArn': 'arn:aws:sns:us-east-1:123456789:test-topic',
-        ':payload': { foo: 'bar' }
-      }
-    })
+    expect(sendMock).toHaveBeenCalledTimes(1)
+    expect(sendMock).toHaveBeenCalledWith(expect.any(UpdateCommand))
+    expect(sendMock.mock.calls[0][0].clientCommand.input).toEqual(
+      expect.objectContaining({
+        TableName: 'tasks-table',
+        Key: { taskId: 'test-task-id' },
+        UpdateExpression:
+          'SET #executeTime = :executeTime, #executeHuman = :executeHuman, #topicArn = :topicArn, #payload = :payload',
+        ExpressionAttributeNames: {
+          '#executeTime': 'executeTime',
+          '#executeHuman': 'executeHuman',
+          '#topicArn': 'topicArn',
+          '#payload': 'payload'
+        },
+        ExpressionAttributeValues: {
+          ':executeTime': 20,
+          ':executeHuman': new Date(20000).toString(),
+          ':topicArn': 'arn:aws:sns:us-east-1:123456789:test-topic',
+          ':payload': { foo: 'bar' }
+        }
+      })
+    )
   })
 
   it('defaults payload to an empty object', async () => {
@@ -62,8 +75,9 @@ describe('ingest handler', () => {
       topicArn: 'arn:aws:sns:us-east-1:123456789:test-topic'
     })
     await handler(event)
-    expect(updateStub.mock.calls[0][0].ExpressionAttributeValues[':payload']).toEqual({})
-    expect(deleteStub.mock.calls.length).toEqual(0)
+    expect(sendMock).toHaveBeenCalledTimes(1)
+    expect(sendMock).toHaveBeenCalledWith(expect.any(UpdateCommand))
+    expect(sendMock.mock.calls[0][0].clientCommand.input.ExpressionAttributeValues[':payload']).toEqual({})
   })
 
   it('deletes the entry if executeTime is falsy', async () => {
@@ -73,11 +87,11 @@ describe('ingest handler', () => {
       topicArn: 'arn:aws:sns:us-east-1:123456789:test-topic'
     })
     await handler(event)
-    expect(updateStub.mock.calls.length).toEqual(0)
-    expect(deleteStub.mock.calls.length).toEqual(1)
-    expect(deleteStub.mock.calls[0][0]).toEqual({
+    expect(sendMock).toHaveBeenCalledTimes(1)
+    expect(sendMock).toHaveBeenCalledWith(expect.any(DeleteCommand))
+    expect(sendMock.mock.calls[0][0].clientCommand.input).toEqual(expect.objectContaining({
       TableName: 'tasks-table',
       Key: { taskId: 'test-task-id' }
-    })
+    }))
   })
 })

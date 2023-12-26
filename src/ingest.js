@@ -1,13 +1,15 @@
-const AWS = require('aws-sdk')
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb')
+const { DynamoDBDocumentClient, UpdateCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb')
 
 module.exports.handler = async (event) => {
-  const documentClient = new AWS.DynamoDB.DocumentClient()
+  const dynamoDbClient = new DynamoDBClient({})
+  const documentClient = DynamoDBDocumentClient.from(dynamoDbClient)
   return Promise.all(event.Records.map(async (record) => {
     const { executeTime, taskId, topicArn, payload = {} } = JSON.parse(record.Sns.Message)
     console.info(`Processing incoming task request: ${taskId}...`)
     if (executeTime) {
       console.info(`Creating task '${taskId}' to execute at '${executeTime}'...`)
-      await documentClient.update({
+      await documentClient.send(new UpdateCommand({
         TableName: process.env.TASKS_TABLE,
         Key: { taskId },
         UpdateExpression: 'SET #executeTime = :executeTime, #executeHuman = :executeHuman, #topicArn = :topicArn, #payload = :payload',
@@ -23,13 +25,13 @@ module.exports.handler = async (event) => {
           ':topicArn': topicArn,
           ':payload': payload
         }
-      }).promise()
+      }))
     } else {
       console.info(`Deleting task '${taskId}'...`)
-      await documentClient.delete({
+      await documentClient.send(new DeleteCommand({
         TableName: process.env.TASKS_TABLE,
         Key: { taskId }
-      }).promise()
+      }))
     }
   }))
 }
