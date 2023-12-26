@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.17](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.16...v0.0.17) (2023-12-26)
+
+
+### Features
+
+* upgrade to node 20 and aws sdk v3 ([9dab372](https://github.com/sammarks/cloudformation-scheduled-tasks/commit/9dab37203a73bd16205372ad5c38581683fee717))
+
 ### [0.0.16](https://github.com/sammarks/cloudformation-scheduled-tasks/compare/v0.0.15...v0.0.16) (2023-09-27)
 
 
